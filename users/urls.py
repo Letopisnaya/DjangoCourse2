@@ -1,0 +1,22 @@
+from django.urls import path
+
+from users.apps import UsersConfig
+from users.views import (UserCreateApiView,
+                             UserDestroyApiView, UserListApiView,
+                             UserRetrieveApiView, UserUpdateApiView)
+
+app_name = UsersConfig.name
+
+urlpatterns = [
+    path("", UserListApiView.as_view(), name="users_list"),
+    path("<int:pk>/", UserRetrieveApiView.as_view(), name="users_retrieve"),
+    path("create/", UserCreateApiView.as_view(), name="users_create"),
+    path(
+        "<int:pk>/delete/",
+        UserDestroyApiView.as_view(),
+        name="users_delete",
+    ),
+    path(
+        "<int:pk>/update/", UserUpdateApiView.as_view(), name="users_update"
+    ),
+]
