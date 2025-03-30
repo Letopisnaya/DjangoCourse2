@@ -21,7 +21,7 @@ class Course(models.Model):
 
 class Lesson(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название")
-    name_course = models.ForeignKey(
+    course = models.ForeignKey(
         Course,
         on_delete=models.SET_NULL,
         null=True,
