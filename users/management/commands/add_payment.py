@@ -1,14 +1,13 @@
-from django.core.management.base import BaseCommand
+from django.core.management import BaseCommand
 
-from materials.models import Course
-from users.models import User, Payment
+from users.models import User
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        user = User.objects.get(email="admin@gmail.com")
-        paid_course = Course.objects.get(name="Начальный модуль")
-
-        payment = Payment.objects.create(user=user, course=paid_course, payment_amount="1000",
-                                         payment_method="cash")
-        payment.save()
+        user = User.objects.create(email="admin@example.ru")
+        user.set_password("1408")
+        user.is_staff = True
+        user.is_active = True
+        user.is_superuser = True
+        user.save()

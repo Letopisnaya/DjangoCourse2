@@ -5,7 +5,7 @@ from materials.models import Course, Lesson
 
 
 class User(AbstractUser):
-    username = models.CharField(max_length=50, null=True, blank=True)
+    username = None
     email = models.EmailField(unique=True, verbose_name="Почта")
     phone = models.CharField(
         max_length=35, null=True, blank=True, verbose_name="Номер телефона"
@@ -67,4 +67,4 @@ class Payment(models.Model):
         verbose_name_plural = "Платежи"
 
     def __str__(self):
-        return f'{self.user} - {self.course or self.lesson}'
+        return f"{self.user} - {self.course or self.lesson}"
