@@ -1,33 +1,68 @@
-from django.urls import path
-from rest_framework.routers import SimpleRouter
+from rest_framework.generics import (CreateAPIView, DestroyAPIView,
+                                     ListAPIView, RetrieveAPIView,
+                                     UpdateAPIView)
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
 
-from materials.apps import MaterialsConfig
-from materials.views import (
-    CourseViewSet,
-    LessonCreateApiView,
-    LessonDestroyApiView,
-    LessonListApiView,
-    LessonRetrieveApiView,
-    LessonUpdateApiView,
-)
+from materials.models import Course, Lesson
+from materials.serializers import (CourseDetailSerializer, CourseSerializer,
+                                   LessonSerializer)
+from users.permissions import Moder, IsOwner
 
-app_name = MaterialsConfig.name
 
-router = SimpleRouter()
-router.register("", CourseViewSet)
+class CourseViewSet(ModelViewSet):
+    queryset = Course.objects.all()
 
-urlpatterns = [
-    path("lessons/", LessonListApiView.as_view(), name="lessons_list"),
-    path("lessons/<int:pk>/", LessonRetrieveApiView.as_view(), name="lessons_retrieve"),
-    path("lessons/create/", LessonCreateApiView.as_view(), name="lessons_create"),
-    path(
-        "lessons/<int:pk>/delete/",
-        LessonDestroyApiView.as_view(),
-        name="lessons_delete",
-    ),
-    path(
-        "lessons/<int:pk>/update/", LessonUpdateApiView.as_view(), name="lessons_update"
-    ),
-]
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return CourseDetailSerializer
+        return CourseSerializer
 
-urlpatterns += router.urls
+    def perform_create(self, serializer):
+        course = serializer.save()
+        course.owner = self.request.user
+        course.save()
+
+    def get_permissions(self):
+        if self.action == "create":
+            self.permission_classes = (~Moder,)
+        elif self.action in ["update", "retrieve"]:
+            self.permission_classes = (Moder | IsOwner,)
+        elif self.action == "destroy":
+            self.permission_classes = (~Moder | IsOwner,)
+        return super().get_permissions()
+
+
+class LessonCreateApiView(CreateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (~Moder, IsAuthenticated)
+
+    def perform_create(self, serializer):
+        lesson = serializer.save()
+        lesson.owner = self.request.user
+        lesson.save()
+
+
+class LessonListApiView(ListAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (IsAuthenticated, Moder | IsOwner)
+
+
+class LessonRetrieveApiView(RetrieveAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (IsAuthenticated, Moder | IsOwner)
+
+
+class LessonUpdateApiView(UpdateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (IsAuthenticated, Moder | IsOwner)
+
+
+class LessonDestroyApiView(DestroyAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (IsAuthenticated, ~Moder | IsOwner)
