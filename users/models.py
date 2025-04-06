@@ -61,10 +61,16 @@ class Payment(models.Model):
         default="transfer",
         verbose_name="Метод оплаты",
     )
+    session_id = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="id сессии"
+    )
+    link = models.URLField(
+        max_length=400, null=True, blank=True, verbose_name="Ссылка на оплату"
+    )
 
     class Meta:
         verbose_name = "Платеж"
         verbose_name_plural = "Платежи"
 
     def __str__(self):
-        return f"{self.user} - {self.course or self.lesson}"
+        return self.payment_amount
