@@ -1,11 +1,6 @@
-from rest_framework.generics import (
-    CreateAPIView,
-    DestroyAPIView,
-    ListAPIView,
-    RetrieveAPIView,
-    UpdateAPIView,
-    get_object_or_404,
-)
+from rest_framework.generics import (CreateAPIView, DestroyAPIView,
+                                     ListAPIView, RetrieveAPIView,
+                                     UpdateAPIView, get_object_or_404)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,13 +8,10 @@ from rest_framework.viewsets import ModelViewSet
 
 from materials.models import Course, Lesson, Subscription
 from materials.paginators import CustomPagination
-from materials.serializers import (
-    CourseDetailSerializer,
-    CourseSerializer,
-    LessonSerializer,
-    SubscriptionSerializer,
-)
-from users.permissions import Moder, IsOwner
+from materials.serializers import (CourseDetailSerializer, CourseSerializer,
+                                   LessonSerializer, SubscriptionSerializer)
+from materials.tasks import send_subscription
+from users.permissions import IsOwner, Moder
 
 
 class CourseViewSet(ModelViewSet):
@@ -98,6 +90,7 @@ class SubscriptionAPIView(APIView):
         else:
             Subscription.objects.create(user=user, course=course_item)
             message = "Вы подписались"
+            send_subscription.delay(user.email)
         return Response({"message": message})
 
 
