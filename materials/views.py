@@ -28,6 +28,11 @@ class CourseViewSet(ModelViewSet):
         course.owner = self.request.user
         course.save()
 
+    def perform_update(self, serializer):
+        updated_course = serializer.save()
+        send_subscription.delay(updated_course)
+        updated_course.save()
+
     def get_permissions(self):
         if self.action == "create":
             self.permission_classes = (~Moder,)

@@ -11,7 +11,7 @@ from users.models import User
 @shared_task
 def send_subscription(email):
     send_mail(
-        "Подписка", "На обновления вашего курса подписались", EMAIL_HOST_USER, email
+        "Подписка", "Курс, на который вы подписаны, обновлен", EMAIL_HOST_USER, email
     )
 
 
