@@ -1,9 +1,7 @@
-from django.db.models.expressions import result
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
-from materials.models import Course, Lesson, Subscription
+from materials.models import Course, Lesson
 from users.models import User
 
 
@@ -73,34 +71,3 @@ class LessonTestCase(APITestCase):
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(data, result)
-
-
-class SubscriptionTestCase(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create(email="admin@example.com")
-        self.course = Course.objects.create(
-            name="Саморазвитие", description="Курс для тех, кто хочет саморазвиваться"
-        )
-        self.lesson = Lesson.objects.create(
-            name="Урок 4", course=self.course, owner=self.user
-        )
-        self.subscription = Subscription.objects.create(
-            user=self.user, course=self.course
-        )
-        self.client.force_authenticate(user=self.user)
-
-    def test_subscribe_to_course(self):
-        Subscription.objects.all().delete()
-        url = reverse("materials:subscription_create")
-        data = {"course_id": self.course.id}
-        response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "Вы подписались")
-        self.assertTrue(
-            Subscription.objects.filter(user=self.user, course=self.course).exists()
-        )
-        url = reverse("materials:subscription_create")
-        data = {"course_id": self.course.id}
-        response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "Вы отписались")
